@@ -1,0 +1,81 @@
+#R community code
+
+#Packages
+library(tidyverse)
+library(readxl)
+library(leaflet)
+library(sp)
+
+
+#Make dummy data
+
+herd_map_df <- structure(list(
+    farm_id = 1:10, #Unique identifier 
+    longitude = c(
+      175.45375457897, 175.606743258373, 175.625382066676, 
+      175.62161002476, 175.733051547872, 175.547922685997, 
+      175.586420342908, 175.679366630854, 173.9451, 
+      173.8019),
+    latitude = c(
+      -37.6964326410296, -37.6315371816273, -37.5684444733237,
+      -37.7819236052399, -37.6961165021275, -37.7653201740032,
+      -37.5825353370919, -37.6830031491463, -39.19344,
+      -39.21418),
+    group = c("High", "Low", "Med", "High", "Low", "Med",
+              "High", "Low", "Med", "High")),
+  row.names = c(NA,-10L),
+  class = c("tbl_df",
+            "tbl", "data.frame"))
+
+herd_map_df
+
+#Make map
+
+herd_map_df %>% 
+  leaflet() %>% 
+  addCircleMarkers(~longitude, ~latitude,
+                   color = ~ ifelse(group == "High", "red", 
+                                    ifelse(group == "Low", "green", "blue"))) %>% 
+  addTiles()
+
+#Make better markers
+#https://www.jla-data.net/eng/leaflet-markers-in-r/
+
+awesome <- makeAwesomeIcon(
+  icon = "fire",
+  iconColor = "black",
+  markerColor = "blue",
+  library = "fa")
+
+herd_map_df %>% 
+  leaflet() %>% 
+  addAwesomeMarkers(icon = awesome) %>% 
+  addTiles()
+
+awesome_set <- awesomeIconList(
+  "High" = makeAwesomeIcon(
+    icon = "fire",
+    iconColor = "black",
+    markerColor = "red",
+    library = "fa"),
+  "Low" = makeAwesomeIcon(
+    icon = "heart",
+    iconColor = "black",
+    markerColor = "green",
+    library = "fa"),
+  "Med" = makeAwesomeIcon(
+    icon = "star",
+    iconColor = "black",
+    markerColor = "blue",
+    library = "fa"))
+
+herd_map_df %>% 
+  leaflet() %>% 
+  addAwesomeMarkers(icon = ~ awesome_set[group]) %>% 
+  addTiles()
+
+#Make it spacedish view
+herd_map_df %>% 
+  leaflet() %>% 
+  addAwesomeMarkers(icon = ~ awesome_set[group]) %>% 
+  addProviderTiles('Esri.WorldImagery')
